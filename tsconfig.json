@@ -8,6 +8,9 @@
     },
     {
       "path": "./apps/reference-app"
+    },
+    {
+      "path": "./libs/filter-builder"
     }
   ]
 }

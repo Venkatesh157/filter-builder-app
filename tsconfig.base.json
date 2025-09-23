@@ -1,5 +1,11 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@json-filter-builder/filter-builder": [
+        "libs/filter-builder/src/index.ts"
+      ]
+    },
     "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
