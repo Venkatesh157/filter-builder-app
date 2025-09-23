@@ -92,3 +92,11 @@ export const BASE_OPERATORS = {
   before: { id: 'before', label: 'Before', arity: 1 },
   after: { id: 'after', label: 'After', arity: 1 },
 } satisfies Record<string, OperatorDef>;
+
+export type ValidationSeverity = 'error' | 'warning';
+
+export interface ValidationIssue {
+  path: string[];
+  message: string;
+  severity: ValidationSeverity;
+}
