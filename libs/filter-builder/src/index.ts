@@ -4,3 +4,4 @@ export * from './lib/filter-builder';
 export * from './state/reducer';
 export * from './state/actions';
 export * from './core/node';
+export * from './core/types';

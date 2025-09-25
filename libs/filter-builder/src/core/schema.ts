@@ -1,8 +1,12 @@
-import { Field, OperatorDef } from './types';
+import { group } from './node';
+import { Field, NormalizedSchema, OperatorDef } from './types';
 
-export function normalizeSchema(rawFields: Field[]) {
+export function normalizeSchema(rawFields: Field[]): NormalizedSchema {
   const fieldsById: Record<string, Field> = {};
   const operatorsById: Record<string, OperatorDef> = {};
+
+  const root = group();
+  root.id = 'root';
 
   for (const field of rawFields) {
     fieldsById[field.id] = field;
@@ -34,10 +38,6 @@ export function normalizeSchema(rawFields: Field[]) {
   return {
     fields: fieldsById,
     operators: operatorsById,
-    root: {
-      kind: 'group',
-      combinator: 'AND',
-      children: [],
-    },
+    root,
   };
 }

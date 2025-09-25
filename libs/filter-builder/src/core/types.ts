@@ -8,11 +8,17 @@ export interface OperatorDef {
   coerce?: (raw: unknown) => unknown;
 }
 
+export interface FieldOption {
+  value: string;
+  label: string;
+}
+
 export type Field = {
   id: string;
   label: string;
   type: FieldType;
   operators: OperatorDef[];
+  options?: FieldOption[];
 };
 
 export type ConditionNode = {
