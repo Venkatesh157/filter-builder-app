@@ -1,8 +1,11 @@
 import { useEffect, useMemo } from 'react';
 import type { ChangeEvent } from 'react';
 
-import { useFilterBuilder } from '../filter-builder';
+import { useFilterBuilder } from '../field-builder-context/FilterBuilderContext';
 import type { FieldType } from '../../core/types';
+
+const joinClassNames = (...classes: Array<string | false | null | undefined>) =>
+  classes.filter(Boolean).join(' ');
 
 export interface ValueEditorProps {
   fieldId?: string | null;
@@ -14,6 +17,7 @@ export interface ValueEditorProps {
   disabled?: boolean;
   placeholder?: string;
   'aria-label'?: string;
+  className?: string;
 }
 
 const defaultPlaceholder = 'Enter value';
@@ -55,6 +59,7 @@ export function ValueEditor({
   disabled,
   placeholder = defaultPlaceholder,
   'aria-label': ariaLabel,
+  className,
 }: ValueEditorProps) {
   const { schema } = useFilterBuilder();
 
@@ -82,6 +87,18 @@ export function ValueEditor({
   const coerce = (next: unknown) =>
     operator?.coerce ? operator.coerce(next) : next;
 
+  const selectClassName = joinClassNames(
+    'w-full min-w-[8rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500/60 disabled:cursor-not-allowed disabled:opacity-60',
+    isDisabled && 'cursor-not-allowed',
+    className
+  );
+
+  const inputClassName = joinClassNames(
+    'w-full min-w-[8rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500/60 disabled:cursor-not-allowed disabled:opacity-60',
+    isDisabled && 'cursor-not-allowed',
+    className
+  );
+
   if (!field || !operator) {
     return (
       <input
@@ -92,6 +109,7 @@ export function ValueEditor({
         disabled
         placeholder={placeholder}
         aria-label={aria}
+        className={inputClassName}
       />
     );
   }
@@ -121,6 +139,7 @@ export function ValueEditor({
           onChange={handleBooleanChange}
           disabled={isDisabled}
           aria-label={aria}
+          className={selectClassName}
         >
           <option value="">{placeholder}</option>
           <option value="true">True</option>
@@ -147,6 +166,7 @@ export function ValueEditor({
           onChange={handleEnumChange}
           disabled={isDisabled}
           aria-label={aria}
+          className={selectClassName}
         >
           <option value="">{placeholder}</option>
           {field.options.map((option) => (
@@ -195,6 +215,7 @@ export function ValueEditor({
         disabled={isDisabled}
         placeholder={placeholder}
         aria-label={aria}
+        className={inputClassName}
       />
     );
   }
@@ -217,7 +238,11 @@ export function ValueEditor({
   const inputTypeForTuple = field.type === 'number' ? 'number' : 'text';
 
   return (
-    <span role="group" aria-label={aria}>
+    <span
+      role="group"
+      aria-label={aria}
+      className="flex w-full flex-wrap items-center gap-2"
+    >
       <input
         id={id ? `${id}-start` : undefined}
         name={name ? `${name}[0]` : undefined}
@@ -227,6 +252,7 @@ export function ValueEditor({
         disabled={isDisabled}
         placeholder={placeholder}
         aria-label={`${aria} start`}
+        className={inputClassName}
       />
       <input
         id={id ? `${id}-end` : undefined}
@@ -237,6 +263,7 @@ export function ValueEditor({
         disabled={isDisabled}
         placeholder={placeholder}
         aria-label={`${aria} end`}
+        className={inputClassName}
       />
     </span>
   );

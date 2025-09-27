@@ -1,6 +1,14 @@
-// Use this file to export React client components (e.g. those with 'use client' directive) or other non-server utilities
-
 export * from './lib/filter-builder';
+export * from './lib/field-builder-provider/FilterBuilderProvider';
+export * from './lib/field-builder-context/FilterBuilderContext';
+export * from './lib/hooks';
+export * from './lib/field-picker/FieldPicker';
+export * from './lib/operator-picker/OperatorPicker';
+export * from './lib/value-editor/ValueEditor';
+export * from './lib/filter-condition/FilterCondition';
+export * from './lib/group-controls/GroupControls';
+export * from './lib/filter-group/FilterGroup';
+export * from './lib/query-preview';
 export * from './state/reducer';
 export * from './state/actions';
 export * from './core/node';

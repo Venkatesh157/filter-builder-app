@@ -1,8 +1,41 @@
 'use client';
-import { FilterBuilderProvider } from '@json-filter-builder/filter-builder';
-import type { Field } from '@json-filter-builder/filter-builder';
 
-const mockFields = [
+import Link from 'next/link';
+
+import { FilterBuilder, type Field } from '@json-filter-builder/filter-builder';
+
+const fields: Field[] = [
+  {
+    id: 'name',
+    label: 'Name',
+    type: 'string',
+    operators: [
+      { id: 'eq', label: 'Equals', arity: 1 },
+      { id: 'contains', label: 'Contains', arity: 1 },
+      { id: 'starts_with', label: 'Starts with', arity: 1 },
+    ],
+  },
+  {
+    id: 'age',
+    label: 'Age',
+    type: 'number',
+    operators: [
+      { id: 'eq', label: 'Equals', arity: 1 },
+      { id: 'gt', label: 'Greater Than', arity: 1 },
+      { id: 'lt', label: 'Less Than', arity: 1 },
+      { id: 'between', label: 'Between', arity: 2 },
+    ],
+  },
+  {
+    id: 'signup_date',
+    label: 'Sign Up Date',
+    type: 'date',
+    operators: [
+      { id: 'before', label: 'Before', arity: 1 },
+      { id: 'after', label: 'After', arity: 1 },
+      { id: 'between', label: 'Between', arity: 2 },
+    ],
+  },
   {
     id: 'status',
     label: 'Status',
@@ -11,28 +44,36 @@ const mockFields = [
       { id: 'eq', label: 'Equals', arity: 1 },
       { id: 'neq', label: 'Does Not Equal', arity: 1 },
     ],
-  },
-  {
-    id: 'status', // duplicate on purpose
-    label: 'Employment Status',
-    type: 'enum',
-    operators: [
-      { id: 'eq', label: 'Equals', arity: 1 },
-      { id: 'neq', label: 'Does Not Equal', arity: 1 },
+    options: [
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+      { value: 'pending', label: 'Pending' },
     ],
   },
-] satisfies Field[];
+];
 
-export default function Index() {
-  /*
-   * Replace the elements below with your own.
-   *
-   * Note: The corresponding styles are in the ./index.tailwind file.
-   */
+export default function IndexPage() {
   return (
-    <FilterBuilderProvider fields={mockFields}>
-      {/* TODO: render FieldPicker */}
-      <div>Filter builder UI coming soon…</div>
-    </FilterBuilderProvider>
+    <main className="flex min-h-screen items-start justify-center bg-slate-100/70 p-6">
+      <div className="w-full max-w-4xl space-y-6">
+        <header className="space-y-1">
+          <h1 className="text-2xl font-semibold text-slate-800">
+            Filter Builder
+          </h1>
+          <p className="text-sm text-slate-600">
+            Experiment with the core filtering UI. Check out the{' '}
+            <Link href="/products" className="font-medium text-indigo-600">
+              product catalog
+            </Link>{' '}
+            or{' '}
+            <Link href="/users" className="font-medium text-indigo-600">
+              user directory
+            </Link>{' '}
+            demos to see live data filtering in action.
+          </p>
+        </header>
+        <FilterBuilder fields={fields} />
+      </div>
+    </main>
   );
 }

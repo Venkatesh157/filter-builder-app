@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
-import { useFilterBuilder } from './filter-builder';
+import { useFilterBuilder } from './field-builder-context/FilterBuilderContext';
 import type { FieldType, OperatorDef } from '../core/types';
 
-export interface FieldOption {
+export interface FieldPickerOption {
   id: string;
   label: string;
   type: FieldType;
 }
 
-export function useFieldOptions(): FieldOption[] {
+export function useFieldOptions(): FieldPickerOption[] {
   const { schema } = useFilterBuilder();
   return useMemo(() => {
     return Object.values(schema.fields)
