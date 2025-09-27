@@ -48,8 +48,8 @@ export function toJSON(
   if (options?.emptyPolicy === 'prune') {
     children = children.filter((child) => {
       if (isGroupJSON(child)) {
-        const entries = 'and' in child ? child.and : child.or;
-        return (entries ?? []).length > 0;
+        const entries = isAndGroup(child) ? child.and : child.or;
+        return entries.length > 0;
       }
       return true;
     });
@@ -100,4 +100,10 @@ function isConditionJSON(value: FilterJSON): value is FilterConditionJSON {
 
 function isGroupJSON(value: FilterJSON): value is FilterGroupJSON {
   return 'and' in value || 'or' in value;
+}
+
+function isAndGroup(
+  value: FilterGroupJSON
+): value is { and: FilterJSON[] } {
+  return 'and' in value;
 }
