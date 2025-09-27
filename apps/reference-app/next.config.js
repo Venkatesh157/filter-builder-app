@@ -11,11 +11,10 @@ const nextConfig = {
   // Use this to set Nx-specific options
   // See: https://nx.dev/recipes/next/next-config-setup
 
-  distDir: 'dist',
   nx: {
     svgr: false,
   },
-  output: 'export',
+  output: 'standalone',
 };
 
 const plugins = [
