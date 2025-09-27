@@ -5,6 +5,7 @@ const svg = require('@svgr/rollup');
 module.exports = withNx(
   {
     main: './src/index.ts',
+    additionalEntryPoints: ['./src/schema.ts'],
     outputPath: './dist',
     tsConfig: './tsconfig.lib.json',
     compiler: 'babel',
@@ -24,5 +25,11 @@ module.exports = withNx(
         limit: 10000, // 10kB
       }),
     ],
+    output: {
+      banner: (chunk) =>
+        chunk.facadeModuleId && chunk.facadeModuleId.endsWith('index.ts')
+          ? '"use client";'
+          : '',
+    },
   }
 );

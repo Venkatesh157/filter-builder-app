@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import { BASE_OPERATORS } from '@json-filter-builder/filter-builder/schema';
+
 import type { Product, ProductFieldConfig } from './product-types';
 import { ProductFilterClient } from './product-filter-client';
 
@@ -30,9 +32,9 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
         label: 'Title',
         type: 'string',
         operators: [
-          { id: 'contains', label: 'Contains', arity: 1 },
-          { id: 'starts_with', label: 'Starts with', arity: 1 },
-          { id: 'eq', label: 'Equals', arity: 1 },
+          BASE_OPERATORS.contains,
+          BASE_OPERATORS.starts_with,
+          BASE_OPERATORS.eq,
         ],
       },
     },
@@ -46,10 +48,7 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
           value: category,
           label: category,
         })),
-        operators: [
-          { id: 'eq', label: 'Equals', arity: 1 },
-          { id: 'neq', label: 'Does Not Equal', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.eq, BASE_OPERATORS.neq],
       },
     },
     {
@@ -59,10 +58,10 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
         label: 'Price',
         type: 'number',
         operators: [
-          { id: 'eq', label: 'Equals', arity: 1 },
-          { id: 'gt', label: 'Greater Than', arity: 1 },
-          { id: 'lt', label: 'Less Than', arity: 1 },
-          { id: 'between', label: 'Between', arity: 2 },
+          BASE_OPERATORS.eq,
+          BASE_OPERATORS.gt,
+          BASE_OPERATORS.lt,
+          BASE_OPERATORS.between,
         ],
       },
     },
@@ -72,10 +71,7 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
         id: 'rating_rate',
         label: 'Rating',
         type: 'number',
-        operators: [
-          { id: 'gt', label: 'Greater Than', arity: 1 },
-          { id: 'lt', label: 'Less Than', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.gt, BASE_OPERATORS.lt],
       },
     },
     {
@@ -84,10 +80,7 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
         id: 'rating_count',
         label: 'Review Count',
         type: 'number',
-        operators: [
-          { id: 'gt', label: 'Greater Than', arity: 1 },
-          { id: 'lt', label: 'Less Than', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.gt, BASE_OPERATORS.lt],
       },
     },
     {
@@ -96,10 +89,7 @@ const buildFieldConfig = (products: Product[]): ProductFieldConfig[] => {
         id: 'description',
         label: 'Description',
         type: 'string',
-        operators: [
-          { id: 'contains', label: 'Contains', arity: 1 },
-          { id: 'eq', label: 'Equals', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.contains, BASE_OPERATORS.eq],
       },
     },
   ];
@@ -115,4 +105,3 @@ export default async function ProductPage() {
     </main>
   );
 }
-

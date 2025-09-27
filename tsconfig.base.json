@@ -4,6 +4,9 @@
     "paths": {
       "@json-filter-builder/filter-builder": [
         "libs/filter-builder/src/index.ts"
+      ],
+      "@json-filter-builder/filter-builder/schema": [
+        "libs/filter-builder/src/schema.ts"
       ]
     },
     "composite": true,

@@ -73,13 +73,23 @@ export function ValueEditor({
     return [undefined, undefined] as const;
   }, [value]);
 
-  // Ensure we clear values for zero-arity operators.
+  const listValues = useMemo(() => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    if (value === undefined || value === null) {
+      return [];
+    }
+    return [value];
+  }, [value]);
+
+  // Ensure we clear values for operators that should not hold data.
   useEffect(() => {
     if (!field || !operator) return;
-    if (operator.arity === 0) {
+    if (operator.valueShape === 'none' && value !== undefined && value !== null) {
       onChange?.(undefined);
     }
-  }, [field, operator, onChange]);
+  }, [field, operator, value, onChange]);
 
   const aria = ariaLabel ?? placeholder;
   const isDisabled = disabled || !field || !operator;
@@ -114,11 +124,13 @@ export function ValueEditor({
     );
   }
 
-  if (operator.arity === 0) {
+  const shape = operator.valueShape;
+
+  if (shape === 'none') {
     return null;
   }
 
-  if (operator.arity === 1) {
+  if (shape === 'single') {
     if (field.type === 'boolean') {
       const booleanValue =
         value === true ? 'true' : value === false ? 'false' : '';
@@ -220,52 +232,94 @@ export function ValueEditor({
     );
   }
 
-  const stringTuple: [string, string] = [
-    formatForInput(tupleValues[0], field.type),
-    formatForInput(tupleValues[1], field.type),
-  ];
+  if (shape === 'pair') {
+    const stringTuple: [string, string] = [
+      formatForInput(tupleValues[0], field.type),
+      formatForInput(tupleValues[1], field.type),
+    ];
 
-  const handleTupleChange = (
-    index: 0 | 1,
-    event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const parsed = parseFromInput(event.currentTarget.value, field.type);
-    const nextTuple: unknown[] = [...tupleValues];
-    nextTuple[index] = parsed;
-    onChange?.(coerce(nextTuple));
+    const handleTupleChange = (
+      index: 0 | 1,
+      event: ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    ) => {
+      const parsed = parseFromInput(event.currentTarget.value, field.type);
+      const nextTuple: unknown[] = [...tupleValues];
+      nextTuple[index] = parsed;
+      onChange?.(coerce(nextTuple));
+    };
+
+    const inputTypeForTuple = (() => {
+      switch (field.type) {
+        case 'number':
+          return 'number';
+        case 'date':
+          return 'date';
+        default:
+          return 'text';
+      }
+    })();
+
+    return (
+      <span
+        role="group"
+        aria-label={aria}
+        className="flex w-full flex-wrap items-center gap-2"
+      >
+        <input
+          id={id ? `${id}-start` : undefined}
+          name={name ? `${name}[0]` : undefined}
+          type={inputTypeForTuple}
+          value={stringTuple[0]}
+          onChange={(event) => handleTupleChange(0, event)}
+          disabled={isDisabled}
+          placeholder={placeholder}
+          aria-label={`${aria} start`}
+          className={inputClassName}
+        />
+        <input
+          id={id ? `${id}-end` : undefined}
+          name={name ? `${name}[1]` : undefined}
+          type={inputTypeForTuple}
+          value={stringTuple[1]}
+          onChange={(event) => handleTupleChange(1, event)}
+          disabled={isDisabled}
+          placeholder={placeholder}
+          aria-label={`${aria} end`}
+          className={inputClassName}
+        />
+      </span>
+    );
+  }
+
+  const serializedList = listValues
+    .map((entry) => (entry === undefined || entry === null ? '' : String(entry)))
+    .join('\n');
+
+  const handleListChange = ({ currentTarget }: ChangeEvent<HTMLTextAreaElement>) => {
+    const entries = currentTarget.value
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .map((line) => parseFromInput(line, field.type));
+
+    onChange?.(coerce(entries));
   };
 
-  const inputTypeForTuple = field.type === 'number' ? 'number' : 'text';
-
   return (
-    <span
-      role="group"
+    <textarea
+      id={id}
+      name={name}
+      value={serializedList}
+      onChange={handleListChange}
+      disabled={isDisabled}
+      placeholder={`${placeholder} (one per line)`}
       aria-label={aria}
-      className="flex w-full flex-wrap items-center gap-2"
-    >
-      <input
-        id={id ? `${id}-start` : undefined}
-        name={name ? `${name}[0]` : undefined}
-        type={inputTypeForTuple}
-        value={stringTuple[0]}
-        onChange={(event) => handleTupleChange(0, event)}
-        disabled={isDisabled}
-        placeholder={placeholder}
-        aria-label={`${aria} start`}
-        className={inputClassName}
-      />
-      <input
-        id={id ? `${id}-end` : undefined}
-        name={name ? `${name}[1]` : undefined}
-        type={inputTypeForTuple}
-        value={stringTuple[1]}
-        onChange={(event) => handleTupleChange(1, event)}
-        disabled={isDisabled}
-        placeholder={placeholder}
-        aria-label={`${aria} end`}
-        className={inputClassName}
-      />
-    </span>
+      className={joinClassNames(
+        'h-28 w-full min-w-[10rem] rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:outline-none focus:ring-2 focus:ring-indigo-500/60 disabled:cursor-not-allowed disabled:opacity-60',
+        isDisabled && 'cursor-not-allowed',
+        className
+      )}
+    />
   );
 }
 

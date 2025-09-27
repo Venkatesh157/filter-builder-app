@@ -2,7 +2,11 @@
 
 import Link from 'next/link';
 
-import { FilterBuilder, type Field } from '@json-filter-builder/filter-builder';
+import {
+  FilterBuilder,
+  type Field,
+  BASE_OPERATORS,
+} from '@json-filter-builder/filter-builder';
 
 const fields: Field[] = [
   {
@@ -10,9 +14,9 @@ const fields: Field[] = [
     label: 'Name',
     type: 'string',
     operators: [
-      { id: 'eq', label: 'Equals', arity: 1 },
-      { id: 'contains', label: 'Contains', arity: 1 },
-      { id: 'starts_with', label: 'Starts with', arity: 1 },
+      BASE_OPERATORS.eq,
+      BASE_OPERATORS.contains,
+      BASE_OPERATORS.starts_with,
     ],
   },
   {
@@ -20,10 +24,10 @@ const fields: Field[] = [
     label: 'Age',
     type: 'number',
     operators: [
-      { id: 'eq', label: 'Equals', arity: 1 },
-      { id: 'gt', label: 'Greater Than', arity: 1 },
-      { id: 'lt', label: 'Less Than', arity: 1 },
-      { id: 'between', label: 'Between', arity: 2 },
+      BASE_OPERATORS.eq,
+      BASE_OPERATORS.gt,
+      BASE_OPERATORS.lt,
+      BASE_OPERATORS.between,
     ],
   },
   {
@@ -31,9 +35,9 @@ const fields: Field[] = [
     label: 'Sign Up Date',
     type: 'date',
     operators: [
-      { id: 'before', label: 'Before', arity: 1 },
-      { id: 'after', label: 'After', arity: 1 },
-      { id: 'between', label: 'Between', arity: 2 },
+      BASE_OPERATORS.before,
+      BASE_OPERATORS.after,
+      BASE_OPERATORS.between,
     ],
   },
   {
@@ -41,8 +45,8 @@ const fields: Field[] = [
     label: 'Status',
     type: 'enum',
     operators: [
-      { id: 'eq', label: 'Equals', arity: 1 },
-      { id: 'neq', label: 'Does Not Equal', arity: 1 },
+      BASE_OPERATORS.eq,
+      BASE_OPERATORS.neq,
     ],
     options: [
       { value: 'active', label: 'Active' },

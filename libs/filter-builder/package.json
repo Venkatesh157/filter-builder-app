@@ -12,6 +12,12 @@
       "types": "./dist/index.esm.d.ts",
       "import": "./dist/index.esm.js",
       "default": "./dist/index.esm.js"
+    },
+    "./schema": {
+      "@filter-builder-app/source": "./src/schema.ts",
+      "types": "./dist/schema.d.ts",
+      "import": "./dist/schema.esm.js",
+      "default": "./dist/schema.esm.js"
     }
   },
   "files": [

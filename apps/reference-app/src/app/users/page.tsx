@@ -1,5 +1,7 @@
 import { cache } from 'react';
 
+import { BASE_OPERATORS } from '@json-filter-builder/filter-builder/schema';
+
 import type { User, UserFieldConfig } from './user-types';
 import { UserFilterClient } from './user-filter-client';
 
@@ -30,9 +32,9 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         label: 'Name',
         type: 'string',
         operators: [
-          { id: 'contains', label: 'Contains', arity: 1 },
-          { id: 'starts_with', label: 'Starts with', arity: 1 },
-          { id: 'eq', label: 'Equals', arity: 1 },
+          BASE_OPERATORS.contains,
+          BASE_OPERATORS.starts_with,
+          BASE_OPERATORS.eq,
         ],
       },
     },
@@ -42,10 +44,7 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         id: 'email',
         label: 'Email',
         type: 'string',
-        operators: [
-          { id: 'contains', label: 'Contains', arity: 1 },
-          { id: 'eq', label: 'Equals', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.contains, BASE_OPERATORS.eq],
       },
     },
     {
@@ -55,10 +54,7 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         label: 'Role',
         type: 'enum',
         options: uniqueRoles.map((role) => ({ value: role, label: role })),
-        operators: [
-          { id: 'eq', label: 'Equals', arity: 1 },
-          { id: 'neq', label: 'Does Not Equal', arity: 1 },
-        ],
+        operators: [BASE_OPERATORS.eq, BASE_OPERATORS.neq],
       },
     },
     {
@@ -68,10 +64,10 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         label: 'User ID',
         type: 'number',
         operators: [
-          { id: 'eq', label: 'Equals', arity: 1 },
-          { id: 'gt', label: 'Greater Than', arity: 1 },
-          { id: 'lt', label: 'Less Than', arity: 1 },
-          { id: 'between', label: 'Between', arity: 2 },
+          BASE_OPERATORS.eq,
+          BASE_OPERATORS.gt,
+          BASE_OPERATORS.lt,
+          BASE_OPERATORS.between,
         ],
       },
     },
@@ -82,9 +78,9 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         label: 'Created At',
         type: 'date',
         operators: [
-          { id: 'before', label: 'Before', arity: 1 },
-          { id: 'after', label: 'After', arity: 1 },
-          { id: 'between', label: 'Between', arity: 2 },
+          BASE_OPERATORS.before,
+          BASE_OPERATORS.after,
+          BASE_OPERATORS.between,
         ],
       },
     },
@@ -95,9 +91,9 @@ const buildFieldConfig = (users: User[]): UserFieldConfig[] => {
         label: 'Updated At',
         type: 'date',
         operators: [
-          { id: 'before', label: 'Before', arity: 1 },
-          { id: 'after', label: 'After', arity: 1 },
-          { id: 'between', label: 'Between', arity: 2 },
+          BASE_OPERATORS.before,
+          BASE_OPERATORS.after,
+          BASE_OPERATORS.between,
         ],
       },
     },
@@ -114,4 +110,3 @@ export default async function UsersPage() {
     </main>
   );
 }
-

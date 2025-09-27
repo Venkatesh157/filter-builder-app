@@ -89,10 +89,23 @@ export function FilterCondition({
       ? schema.operators[nextOperatorId]
       : undefined;
 
-    const nextValue =
-      nextOperator && nextOperator.arity === 2
-        ? [undefined, undefined]
-        : undefined;
+    let nextValue: unknown;
+
+    if (nextOperator) {
+      switch (nextOperator.valueShape) {
+        case 'pair':
+          nextValue = [undefined, undefined];
+          break;
+        case 'list':
+          nextValue = [];
+          break;
+        case 'none':
+          nextValue = undefined;
+          break;
+        default:
+          nextValue = undefined;
+      }
+    }
 
     dispatch({
       type: 'UPDATE_CONDITION',

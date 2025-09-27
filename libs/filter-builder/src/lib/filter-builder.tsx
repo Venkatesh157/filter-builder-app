@@ -22,25 +22,15 @@ export interface FilterBuilderProps
     FilterBuilderShellProps {}
 
 export function FilterBuilder({
-  fields,
-  initialState,
-  onChange,
-  onSerialize,
-  debounceMs,
   className,
   showPreview = true,
   filterGroupProps,
   previewProps,
   emptyState,
+  ...providerProps
 }: FilterBuilderProps) {
   return (
-    <FilterBuilderProvider
-      fields={fields}
-      initialState={initialState}
-      onChange={onChange}
-      onSerialize={onSerialize}
-      debounceMs={debounceMs}
-    >
+    <FilterBuilderProvider {...providerProps}>
       <FilterBuilderContent
         className={className}
         showPreview={showPreview}
@@ -97,8 +87,10 @@ function FilterBuilderContent({
 
   return (
     <div className={containerClass}>
-      <FilterGroup {...groupProps} />
-      {isEmpty && emptyState}
+      <div>
+        <FilterGroup {...groupProps} />
+        {isEmpty && emptyState}
+      </div>
       {showPreview ? (
         <QueryPreview className={resolvedPreviewClass} {...restPreviewProps} />
       ) : null}

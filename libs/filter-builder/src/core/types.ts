@@ -1,10 +1,12 @@
 export type FieldType = 'string' | 'number' | 'date' | 'boolean' | 'enum';
 export type Combinator = 'AND' | 'OR';
 
+export type OperatorValueShape = 'none' | 'single' | 'pair' | 'list';
+
 export interface OperatorDef {
   id: string;
   label: string;
-  arity: 0 | 1 | 2;
+  valueShape: OperatorValueShape;
   coerce?: (raw: unknown) => unknown;
 }
 
@@ -48,55 +50,63 @@ export const BASE_OPERATORS = {
   eq: {
     id: 'eq',
     label: 'Equals',
-    arity: 1,
+    valueShape: 'single',
   },
   neq: {
     id: 'neq',
     label: 'Does Not Equal',
-    arity: 1,
+    valueShape: 'single',
   },
   gt: {
     id: 'gt',
     label: 'Greater Than',
-    arity: 1,
+    valueShape: 'single',
   },
   lt: {
     id: 'lt',
     label: 'Less Than',
-    arity: 1,
+    valueShape: 'single',
   },
   between: {
     id: 'between',
     label: 'Between',
-    arity: 2,
+    valueShape: 'pair',
   },
   contains: {
     id: 'contains',
     label: 'Contains',
-    arity: 1,
+    valueShape: 'single',
   },
   starts_with: {
     id: 'starts_with',
     label: 'Starts with',
-    arity: 1,
+    valueShape: 'single',
   },
   ends_with: {
     id: 'ends_with',
     label: 'Ends with',
-    arity: 1,
+    valueShape: 'single',
   },
   is_true: {
     id: 'is_true',
     label: 'Is True',
-    arity: 0,
+    valueShape: 'none',
   },
   is_false: {
     id: 'is_false',
     label: 'Is False',
-    arity: 0,
+    valueShape: 'none',
   },
-  before: { id: 'before', label: 'Before', arity: 1 },
-  after: { id: 'after', label: 'After', arity: 1 },
+  before: { id: 'before', label: 'Before', valueShape: 'single' },
+  after: { id: 'after', label: 'After', valueShape: 'single' },
+  in: { id: 'in', label: 'In', valueShape: 'list' },
+  not_in: { id: 'not_in', label: 'Not In', valueShape: 'list' },
+  is_null: { id: 'is_null', label: 'Is Null', valueShape: 'none' },
+  is_not_null: {
+    id: 'is_not_null',
+    label: 'Is Not Null',
+    valueShape: 'none',
+  },
 } satisfies Record<string, OperatorDef>;
 
 export type ValidationSeverity = 'error' | 'warning';

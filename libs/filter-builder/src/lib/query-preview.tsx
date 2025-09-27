@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
 
 import { useFilterBuilder } from './field-builder-context/FilterBuilderContext';
-import { toJSON, toQueryString } from '../core/serialization';
 
 const joinClassNames = (...classes: Array<string | false | null | undefined>) =>
   classes.filter(Boolean).join(' ');
@@ -23,10 +22,10 @@ export function QueryPreview({
   queryLabel = defaultQueryLabel,
   issuesLabel = defaultIssuesLabel,
 }: QueryPreviewProps) {
-  const { state, issues } = useFilterBuilder();
+  const { issues, toJson, toQueryString: buildQueryString } = useFilterBuilder();
 
-  const serialized = useMemo(() => toJSON(state), [state]);
-  const queryString = useMemo(() => toQueryString(state), [state]);
+  const serialized = useMemo(() => toJson(), [toJson]);
+  const queryString = useMemo(() => buildQueryString(), [buildQueryString]);
 
   const sectionClass = joinClassNames(
     'space-y-4 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm',

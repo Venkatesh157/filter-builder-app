@@ -65,24 +65,91 @@ function validateCondition(
     return issues;
   }
 
-  let valueCount = 0;
+  const value = node.value;
+  const shape = operator.valueShape;
 
-  if (operator.arity === 0) {
-    valueCount = 0;
-  } else if (Array.isArray(node.value)) {
-    valueCount = node.value.length;
-  } else if (node.value !== undefined && node.value !== null) {
-    valueCount = 1;
-  } else {
-    valueCount = 0;
-  }
+  const ensureNone = () => {
+    if (value === undefined || value === null) {
+      return;
+    }
 
-  if (valueCount !== operator.arity) {
+    if (Array.isArray(value) && value.length === 0) {
+      return;
+    }
+
     issues.push({
       path,
-      message: `Operator "${operator.id}" expects ${operator.arity} value(s), but received ${valueCount}.`,
+      message: `Operator "${operator.id}" should not receive a value.`,
       severity: 'error',
     });
+  };
+
+  const ensureSingle = () => {
+    if (Array.isArray(value)) {
+      if (value.length === 0) {
+        issues.push({
+          path,
+          message: `Operator "${operator.id}" expects a value.`,
+          severity: 'error',
+        });
+      }
+      return;
+    }
+
+    if (value === undefined || value === null) {
+      issues.push({
+        path,
+        message: `Operator "${operator.id}" expects a value.`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const ensurePair = () => {
+    if (!Array.isArray(value) || value.length !== 2) {
+      issues.push({
+        path,
+        message: `Operator "${operator.id}" expects a pair of values.`,
+        severity: 'error',
+      });
+      return;
+    }
+
+    const [first, second] = value;
+    if (first === undefined || first === null || second === undefined || second === null) {
+      issues.push({
+        path,
+        message: `Operator "${operator.id}" requires both values to be provided.`,
+        severity: 'error',
+      });
+    }
+  };
+
+  const ensureList = () => {
+    if (!Array.isArray(value) || value.length === 0) {
+      issues.push({
+        path,
+        message: `Operator "${operator.id}" expects an array of values.`,
+        severity: 'error',
+      });
+    }
+  };
+
+  switch (shape) {
+    case 'none':
+      ensureNone();
+      break;
+    case 'single':
+      ensureSingle();
+      break;
+    case 'pair':
+      ensurePair();
+      break;
+    case 'list':
+      ensureList();
+      break;
+    default:
+      break;
   }
 
   return issues;

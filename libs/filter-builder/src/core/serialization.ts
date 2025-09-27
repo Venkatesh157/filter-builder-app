@@ -1,60 +1,103 @@
 import { condition, group } from './node';
-import { Combinator, FilterNode } from './types';
+import type { Combinator, FilterNode } from './types';
 
-type JsonCondition = { field: string; op: string; value?: unknown };
-type JsonGroup = { combinator: Combinator; children: JsonNode[] };
-type JsonNode = JsonCondition | JsonGroup;
+export type FilterConditionJSON = {
+  field: string;
+  operator: string;
+  value?: unknown;
+};
+
+export type FilterGroupJSON =
+  | { and: FilterJSON[] }
+  | { or: FilterJSON[] };
+
+export type FilterJSON = FilterConditionJSON | FilterGroupJSON;
+
+const combinatorKey: Record<Combinator, 'and' | 'or'> = {
+  AND: 'and',
+  OR: 'or',
+};
+
+const keyToCombinator: Record<'and' | 'or', Combinator> = {
+  and: 'AND',
+  or: 'OR',
+};
+
+const QUERY_PARAM = 'filters';
 
 export function toJSON(
   node: FilterNode,
   options?: { emptyPolicy?: 'preserve' | 'prune' }
-): JsonNode {
+): FilterJSON {
   if (node.kind === 'condition') {
-    return {
+    const payload: FilterConditionJSON = {
       field: node.fieldId,
-      op: node.operator,
-      value: node.value,
+      operator: node.operator,
     };
+
+    if (node.value !== undefined) {
+      payload.value = node.value;
+    }
+
+    return payload;
   }
 
+  const key = combinatorKey[node.combinator];
   let children = node.children.map((child) => toJSON(child, options));
 
   if (options?.emptyPolicy === 'prune') {
-    children = children.filter(
-      (child) => !('children' in child && child.children.length === 0)
-    );
+    children = children.filter((child) => {
+      if (isGroupJSON(child)) {
+        const entries = child.and ?? child.or ?? [];
+        return entries.length > 0;
+      }
+      return true;
+    });
   }
 
-  return {
-    combinator: node.combinator,
-    children,
-  };
+  return { [key]: children } as FilterGroupJSON;
 }
 
-export function fromJSON(json: JsonNode): FilterNode {
-  if ('field' in json) {
-    return condition(json.field, json.op, json.value);
+export function fromJSON(json: FilterJSON): FilterNode {
+  if (isConditionJSON(json)) {
+    return condition(json.field, json.operator, json.value);
   }
 
+  const [key, value] = Object.entries(json)[0] as [
+    'and' | 'or',
+    FilterJSON[]
+  ];
+
   return group(
-    json.combinator,
-    json.children.map((child) => fromJSON(child))
+    keyToCombinator[key],
+    (value ?? []).map((child) => fromJSON(child))
   );
 }
 
-export function toQueryString(node: FilterNode): string {
+export function toQueryString(node: FilterNode, paramName = QUERY_PARAM): string {
   const json = JSON.stringify(toJSON(node));
-  return `q=${encodeURIComponent(json)}`;
+  return `${encodeURIComponent(paramName)}=${encodeURIComponent(json)}`;
 }
 
-export function fromQueryString(qs: string): FilterNode {
-  const params = new URLSearchParams(qs);
-  const raw = params.get('q');
+export function fromQueryString(
+  qs: string,
+  paramName = QUERY_PARAM
+): FilterNode {
+  const params = new URLSearchParams(qs.startsWith('?') ? qs.slice(1) : qs);
+  const raw = params.get(paramName);
 
   if (!raw) {
     return group();
   }
 
-  const json = JSON.parse(decodeURIComponent(raw));
+  const json = JSON.parse(decodeURIComponent(raw)) as FilterJSON;
   return fromJSON(json);
+}
+
+function isConditionJSON(value: FilterJSON): value is FilterConditionJSON {
+  return 'field' in value;
+}
+
+function isGroupJSON(value: FilterJSON): value is FilterGroupJSON {
+  return 'and' in value || 'or' in value;
 }

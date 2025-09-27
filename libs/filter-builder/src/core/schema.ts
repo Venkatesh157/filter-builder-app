@@ -17,7 +17,7 @@ export function normalizeSchema(rawFields: Field[]): NormalizedSchema {
       if (existing) {
         if (
           existing.label !== operator.label ||
-          existing.arity !== operator.arity
+          existing.valueShape !== operator.valueShape
         ) {
           throw new Error(`Operator mismatch for ${operator.id}`);
         }

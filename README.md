@@ -1,82 +1,171 @@
-# FilterBuilderApp
+# Filter Builder Library
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+A reusable, schema-driven React library for building nested filter expressions and serializing them into a portable JSON format. The package is designed to work with any dataset and supports both GET (query string) and POST (JSON body) submissions.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is almost ready ✨.
-
-[Learn more about this workspace setup and its capabilities](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
-
-## Finish your CI setup
-
-[Click here to finish setting up your workspace!](https://cloud.nx.app/connect/oDbaSuYmjv)
-
-
-## Run tasks
-
-To run the dev server for your app, use:
+## Getting Started
 
 ```sh
-npx nx dev reference-app
+# install dependencies
+npm install
+
+# run story/demo app
+npx nx dev @filter-builder-app/reference-app
+
+# run tests
+npx nx test filter-builder
 ```
 
-To create a production bundle:
+The reference Next.js app exposes three demos:
 
-```sh
-npx nx build reference-app
+- `/` – minimal playground with synthetic people fields
+- `/products` – live product catalog from fakestoreapi.com
+- `/users` – live user directory from api.escuelajs.co
+
+## Library Usage
+
+### Schema Configuration
+
+Define your fields and operators before rendering the builder. Operators describe their expected value shape (`none`, `single`, `pair`, or `list`), which powers validation, serialization, and the appropriate input controls.
+
+```ts
+import {
+  FilterBuilder,
+  type Field,
+  BASE_OPERATORS,
+  type FilterJSON,
+  type FilterApiConfig,
+} from '@json-filter-builder/filter-builder';
+
+const fields: Field[] = [
+  {
+    id: 'title',
+    label: 'Title',
+    type: 'string',
+    operators: [
+      BASE_OPERATORS.contains,
+      BASE_OPERATORS.starts_with,
+      BASE_OPERATORS.eq,
+    ],
+  },
+  {
+    id: 'price',
+    label: 'Price',
+    type: 'number',
+    operators: [
+      BASE_OPERATORS.gt,
+      BASE_OPERATORS.lt,
+      BASE_OPERATORS.between,
+    ],
+  },
+  {
+    id: 'category',
+    label: 'Category',
+    type: 'enum',
+    options: [
+      { value: 'books', label: 'Books' },
+      { value: 'toys', label: 'Toys' },
+    ],
+    operators: [BASE_OPERATORS.eq, BASE_OPERATORS.neq],
+  },
+];
 ```
 
-To see all available targets to run for a project, run:
+### Rendering the Builder
 
-```sh
-npx nx show project reference-app
+```tsx
+const apiConfig: FilterApiConfig = {
+  mode: 'get',
+  url: '/api/search',
+  paramName: 'filters',
+};
+
+<FilterBuilder
+  fields={fields}
+  debounceMs={150}
+  onJsonChange={(json: FilterJSON) => console.log(json)}
+  onSerialize={(qs) => console.log(qs)}
+  apiConfig={apiConfig}
+/>;
 ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+`FilterBuilder` wraps a `FilterBuilderProvider`; both are exported for custom composition. The provider now accepts:
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+| Prop | Description |
+| --- | --- |
+| `fields` | Field definitions (see above). |
+| `initialState` / `initialFilterJson` / `initialQueryString` | Optional starting point for the builder. |
+| `onChange` | Receives the raw `FilterNode` tree. |
+| `onJsonChange` | Receives the spec-compliant JSON representation. |
+| `onSerialize` | Receives the encoded query string (`filters=...`). |
+| `apiConfig` | GET/POST configuration. When provided, the provider exposes `buildRequest` and (optionally) auto-submits requests. |
 
-## Add new projects
+### Context Helpers
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+`useFilterBuilder()` now includes serialization utilities:
 
-Use the plugin's generator to create new projects.
+- `toJson()` – returns a fresh JSON representation
+- `toQueryString(paramName?: string)` – produces a query string fragment
+- `buildRequest(config?: FilterApiConfig)` – creates a `RequestInit` + URL pair for GET/POST submissions
 
-To generate a new application, use:
+These helpers power components like `QueryPreview` and let consumers integrate with custom data flows.
 
-```sh
-npx nx g @nx/next:app demo
+## Serialization Format
+
+Filters are serialized to the target structure described in the challenge spec:
+
+```json
+{
+  "and": [
+    { "field": "age", "operator": "gt", "value": 30 },
+    {
+      "or": [
+        { "field": "role", "operator": "eq", "value": "admin" },
+        { "field": "isActive", "operator": "eq", "value": true }
+      ]
+    }
+  ]
+}
 ```
 
-To generate a new library, use:
+Helpers exported from `@json-filter-builder/filter-builder`:
 
-```sh
-npx nx g @nx/react:lib mylib
-```
+- `toJSON` / `fromJSON`
+- `toQueryString` / `fromQueryString`
+- `buildFilterRequest` for GET/POST payload creation
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+## Validation Rules
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Validation is driven off the operator `valueShape`:
 
+- `none` → no value allowed (e.g., `is_null`)
+- `single` → single primitive value
+- `pair` → two-element tuple (`between`)
+- `list` → non-empty array (`in`, `not_in`)
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Tests cover invalid combinations (missing values, wrong shapes) and ensure the resulting `ValidationIssue`s surface through both the provider context and the default UI.
 
-## Install Nx Console
+## Testing
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+- `libs/filter-builder/src/core/serialization.spec.ts` – JSON/query serialization and GET/POST request helpers
+- `libs/filter-builder/src/core/validation.spec.ts` – operator shape validation scenarios
+- `libs/filter-builder/src/lib/filter-builder.integration.spec.tsx` – user-level interactions (adding/editing conditions) exercising the debounced callback pipeline
 
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Run all tests with `npx nx test filter-builder`.
 
-## Useful links
+## Architecture Notes
 
-Learn more:
+- **Schema normalization** – Fields and operators are normalized once per render. Operators are treated as canonical records keyed by ID; conflicting definitions throw during normalization.
+- **Operator shapes** – Moving from numeric `arity` to descriptive `valueShape` allows the library to cleanly support `between`, `in`, and null checks while driving validation and input rendering from a single source of truth.
+- **Provider callbacks** – The provider now emits raw nodes, JSON, query strings, and optional network requests, letting consumers pick the level of abstraction they need.
+- **API helper** – `buildFilterRequest` centralizes GET/POST request creation so the React layer and external scripts can share the same serialization logic.
+- **Example apps** – The Next.js demo shows how to wire different datasets without leaking domain logic into the library (all dataset evaluation lives alongside the app data).
 
-- [Learn more about this workspace setup](https://nx.dev/nx-api/next?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Contributing
 
-And join the Nx community:
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+1. Make schema/operator changes in `libs/filter-builder/src/core`
+2. Update or add tests (`nx test filter-builder`)
+3. Run lint (`nx lint filter-builder`)
+4. Update the reference app or README when introducing new public APIs
+
+Happy filtering!
+

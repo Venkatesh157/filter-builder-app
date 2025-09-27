@@ -10,7 +10,9 @@ describe('FilterBuilder', () => {
         id: 'name',
         label: 'Name',
         type: 'string',
-        operators: [{ id: 'contains', label: 'Contains', arity: 1 }],
+        operators: [
+          { id: 'contains', label: 'Contains', valueShape: 'single' },
+        ],
       },
     ];
 
