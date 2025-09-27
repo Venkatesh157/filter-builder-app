@@ -48,8 +48,8 @@ export function toJSON(
   if (options?.emptyPolicy === 'prune') {
     children = children.filter((child) => {
       if (isGroupJSON(child)) {
-        const entries = child.and ?? child.or ?? [];
-        return entries.length > 0;
+        const entries = 'and' in child ? child.and : child.or;
+        return (entries ?? []).length > 0;
       }
       return true;
     });
