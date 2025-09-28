@@ -1,6 +1,6 @@
 {
   "name": "json-filter-builder",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Schema-first React filter builder with spec-compliant serialization and GET/POST helpers.",
   "type": "module",
   "license": "MIT",
