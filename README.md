@@ -1,42 +1,47 @@
-# Filter Builder Library
+# json-filter-builder <br/>_Schema-first React filter UI toolkit_
 
-A reusable, schema-driven React library for building nested filter expressions and serializing them into a portable JSON format. The package is designed to work with any dataset and supports both GET (query string) and POST (JSON body) submissions.
+`json-filter-builder` lets you ship a production-ready query builder without writing bespoke condition editors, tree reducers, or serialization logic. Define the fields and operators your API understands, render the builder, and receive clean JSON and query-string payloads that work with any backend.
 
-## Getting Started
+## Quick links
 
-```sh
-# install dependencies
-npm install
+- 🚀 **Live demo** (Next.js reference app): https://filter-builder-app.vercel.app
+- 📦 **npm**: [`json-filter-builder`](https://www.npmjs.com/package/json-filter-builder)
+- 🧠 **API docs**: jump to [Usage](#usage) and [API Reference](#api-reference)
 
-# run story/demo app
-npx nx dev @filter-builder-app/reference-app
+## Highlights
 
-# run tests
-npx nx test filter-builder
+- **Schema driven** – supply your field catalog once; the client UI, validation rules and serialization all derive from it.
+- **Nested groups out of the box** – unlimited `AND`/`OR` depth with accessible keyboard navigation.
+- **Spec-compliant JSON** – emits `{and:[...]}` and `{or:[...]}` structures, plus a prebuilt `buildFilterRequest()` helper for GET/POST integrations.
+- **Server-safe helpers** – import `json-filter-builder/schema` inside `getStaticProps`/app router loaders without pulling in client hooks.
+- **Framework friendly** – battle-tested with Next.js 15 / React 19, but works anywhere React runs.
+- **Batteries included UI** – Tailwind-friendly components that you can swap or style via props.
+
+## Installation
+
+```bash
+npm install json-filter-builder
+# or
+yarn add json-filter-builder
 ```
 
-The reference Next.js app exposes three demos:
+If you need the schema helpers (usable in Node/server contexts) install once and import from the `/schema` entry:
 
-- `/` – minimal playground with synthetic people fields
-- `/products` – live product catalog from fakestoreapi.com
-- `/users` – live user directory from api.escuelajs.co
+```ts
+import { BASE_OPERATORS } from 'json-filter-builder/schema';
+```
 
-## Library Usage
+## Usage
 
-### Schema Configuration
-
-Define your fields and operators before rendering the builder. Operators describe their expected value shape (`none`, `single`, `pair`, or `list`), which powers validation, serialization, and the appropriate input controls.
+### 1. Describe your dataset
 
 ```ts
 import {
-  FilterBuilder,
-  type Field,
   BASE_OPERATORS,
-  type FilterJSON,
-  type FilterApiConfig,
-} from '@json-filter-builder/filter-builder';
+  type Field,
+} from 'json-filter-builder/schema';
 
-const fields: Field[] = [
+export const productFields: Field[] = [
   {
     id: 'title',
     label: 'Title',
@@ -70,102 +75,150 @@ const fields: Field[] = [
 ];
 ```
 
-### Rendering the Builder
+### 2. Render the builder
 
 ```tsx
-const apiConfig: FilterApiConfig = {
+import {
+  FilterBuilder,
+  type FilterJSON,
+  type FilterBuilderApiConfig,
+} from 'json-filter-builder';
+
+const apiConfig: FilterBuilderApiConfig = {
   mode: 'get',
-  url: '/api/search',
+  url: '/api/products',
   paramName: 'filters',
 };
 
-<FilterBuilder
-  fields={fields}
-  debounceMs={150}
-  onJsonChange={(json: FilterJSON) => console.log(json)}
-  onSerialize={(qs) => console.log(qs)}
-  apiConfig={apiConfig}
-/>;
+export function ProductBuilder() {
+  return (
+    <FilterBuilder
+      fields={productFields}
+      debounceMs={200}
+      onJsonChange={(json: FilterJSON) => console.log(json)}
+      onSerialize={(qs) => console.log(qs)}
+      apiConfig={apiConfig}
+    />
+  );
+}
 ```
 
-`FilterBuilder` wraps a `FilterBuilderProvider`; both are exported for custom composition. The provider now accepts:
+### 3. Consume the results
 
-| Prop | Description |
+`FilterBuilderProvider` emits three flavors of output:
+
+- `onChange(node)` → raw filter tree for low-level control.
+- `onJsonChange(json)` → spec-compliant JSON ready for POST bodies.
+- `onSerialize(queryString)` → URL-safe string, e.g. `filters=%7B%22and%22...%7D`.
+
+Or grab the context methods anywhere inside the tree:
+
+```ts
+const { toJson, toQueryString, buildRequest } = useFilterBuilder();
+
+const request = buildRequest({ mode: 'post', url: '/api/search' });
+await fetch(request.url, request.init);
+```
+
+## API Reference
+
+### Components & Hooks
+
+| Export | Description |
 | --- | --- |
-| `fields` | Field definitions (see above). |
-| `initialState` / `initialFilterJson` / `initialQueryString` | Optional starting point for the builder. |
-| `onChange` | Receives the raw `FilterNode` tree. |
-| `onJsonChange` | Receives the spec-compliant JSON representation. |
-| `onSerialize` | Receives the encoded query string (`filters=...`). |
-| `apiConfig` | GET/POST configuration. When provided, the provider exposes `buildRequest` and (optionally) auto-submits requests. |
+| `FilterBuilder` | High-level component that bundles provider + UI shell. |
+| `FilterBuilderProvider` | Lower-level provider when you want to supply custom shells. |
+| `useFilterBuilder()` | Returns `{ schema, state, issues, dispatch, toJson, toQueryString, buildRequest }`. |
+| `FilterGroup`, `FilterCondition`, `OperatorPicker`, `ValueEditor`, `GroupControls`, `FieldPicker`, `QueryPreview` | Modular UI pieces for custom layouts. |
 
-### Context Helpers
+### Schema helpers (`json-filter-builder/schema`)
 
-`useFilterBuilder()` now includes serialization utilities:
+| Export | Description |
+| --- | --- |
+| `BASE_OPERATORS` | Catalog of reusable operators (`eq`, `between`, `in`, `is_null`, etc.). |
+| `normalizeSchema(fields)` | Validates your field list and attaches canonical operator metadata. |
+| `toJSON(node)` / `fromJSON(json)` | Convert between filter trees and the `{and|or}` JSON format. |
+| `toQueryString(node, paramName?)` / `fromQueryString(qs)` | Encode/decode URL parameters. |
+| `buildFilterRequest(node, config)` | Produce GET or POST `RequestInit` objects. |
 
-- `toJson()` – returns a fresh JSON representation
-- `toQueryString(paramName?: string)` – produces a query string fragment
-- `buildRequest(config?: FilterApiConfig)` – creates a `RequestInit` + URL pair for GET/POST submissions
+### Operator shapes
 
-These helpers power components like `QueryPreview` and let consumers integrate with custom data flows.
+Every `OperatorDef` declares a `valueShape` so the UI and validation know what to expect:
 
-## Serialization Format
+| Shape | Meaning | Example operators |
+| --- | --- | --- |
+| `none` | No value allowed | `is_null`, `is_not_null`, `is_true` |
+| `single` | Single primitive | `eq`, `contains`, `gt`, `before` |
+| `pair` | Two-element tuple | `between` |
+| `list` | Non-empty array | `in`, `not_in` |
 
-Filters are serialized to the target structure described in the challenge spec:
+Validation errors surface through `FilterBuilderContext.issues` and are rendered by default in `FilterCondition`.
+
+## Serialization format
 
 ```json
 {
   "and": [
-    { "field": "age", "operator": "gt", "value": 30 },
+    { "field": "price", "operator": "gt", "value": 100 },
     {
       "or": [
-        { "field": "role", "operator": "eq", "value": "admin" },
-        { "field": "isActive", "operator": "eq", "value": true }
+        { "field": "category", "operator": "eq", "value": "electronics" },
+        { "field": "category", "operator": "eq", "value": "smart-home" }
       ]
     }
   ]
 }
 ```
 
-Helpers exported from `@json-filter-builder/filter-builder`:
+That structure is stable and language agnostic—drop it straight into SQL/Prisma builders, Elasticsearch DSLs, or serverless filters.
 
-- `toJSON` / `fromJSON`
-- `toQueryString` / `fromQueryString`
-- `buildFilterRequest` for GET/POST payload creation
+## Reference app
 
-## Validation Rules
+Clone the repository, then:
 
-Validation is driven off the operator `valueShape`:
+```bash
+npm install
+npx nx dev @filter-builder-app/reference-app  # http://localhost:3000
+```
 
-- `none` → no value allowed (e.g., `is_null`)
-- `single` → single primitive value
-- `pair` → two-element tuple (`between`)
-- `list` → non-empty array (`in`, `not_in`)
+- `/` – playground with mock “people” data.
+- `/products` – powered by fakestoreapi.com.
+- `/users` – backed by api.escuelajs.co.
 
-Tests cover invalid combinations (missing values, wrong shapes) and ensure the resulting `ValidationIssue`s surface through both the provider context and the default UI.
+Deploy to Vercel effortlessly:
 
-## Testing
+```
+Root Directory: .
+Build Command: npx nx build @filter-builder-app/reference-app
+Output Directory: apps/reference-app/.next
+```
 
-- `libs/filter-builder/src/core/serialization.spec.ts` – JSON/query serialization and GET/POST request helpers
-- `libs/filter-builder/src/core/validation.spec.ts` – operator shape validation scenarios
-- `libs/filter-builder/src/lib/filter-builder.integration.spec.tsx` – user-level interactions (adding/editing conditions) exercising the debounced callback pipeline
+## Testing & linting
 
-Run all tests with `npx nx test filter-builder`.
+```bash
+npx nx lint @json-filter-builder/filter-builder
+npx nx test @json-filter-builder/filter-builder
+npx nx build @json-filter-builder/filter-builder --watch
+```
 
-## Architecture Notes
+Vitest covers serialization/validation logic and integration flows; ESLint keeps the React pieces consistent.
 
-- **Schema normalization** – Fields and operators are normalized once per render. Operators are treated as canonical records keyed by ID; conflicting definitions throw during normalization.
-- **Operator shapes** – Moving from numeric `arity` to descriptive `valueShape` allows the library to cleanly support `between`, `in`, and null checks while driving validation and input rendering from a single source of truth.
-- **Provider callbacks** – The provider now emits raw nodes, JSON, query strings, and optional network requests, letting consumers pick the level of abstraction they need.
-- **API helper** – `buildFilterRequest` centralizes GET/POST request creation so the React layer and external scripts can share the same serialization logic.
-- **Example apps** – The Next.js demo shows how to wire different datasets without leaking domain logic into the library (all dataset evaluation lives alongside the app data).
+## Release workflow
 
-## Contributing
+1. `npm version --no-git-tag-version <patch|minor|major>`
+2. `npx nx lint && npx nx test && npx nx build @json-filter-builder/filter-builder`
+3. `npm publish --access public` from `libs/filter-builder`
+4. Tag + push: `git tag vX.Y.Z && git push --tags`
+5. Update `README.md` with highlights and new version badge.
 
-1. Make schema/operator changes in `libs/filter-builder/src/core`
-2. Update or add tests (`nx test filter-builder`)
-3. Run lint (`nx lint filter-builder`)
-4. Update the reference app or README when introducing new public APIs
+## SEO-friendly keywords
 
-Happy filtering!
+React filter builder, nested query builder, advanced search UI, JSON filter serialization, Tailwind filter components, Next.js filter form, schema driven filters, dynamic rule builder, AND/OR group UI, GET/POST filter API helper.
+
+## Support & feedback
+
+- Issues & feature requests: open them on the project repo.
+- Questions? Reach out via GitHub discussions or raise an issue with the “question” label.
+
+Happy filtering! If you build something cool with `json-filter-builder`, share it—we love seeing creative UIs built on top of the engine.
 

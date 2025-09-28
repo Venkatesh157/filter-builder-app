@@ -1,6 +1,6 @@
 {
-  "name": "@json-filter-builder/filter-builder",
-  "version": "0.0.1",
+  "name": "json-filter-builder",
+  "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.esm.js",
   "module": "./dist/index.esm.js",
