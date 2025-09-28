@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { BASE_OPERATORS } from '@json-filter-builder/filter-builder/schema';
+import { BASE_OPERATORS } from 'json-filter-builder/schema';
 
 import type { Product, ProductFieldConfig } from './product-types';
 import { ProductFilterClient } from './product-filter-client';

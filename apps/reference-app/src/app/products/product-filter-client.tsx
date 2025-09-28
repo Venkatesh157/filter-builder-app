@@ -5,7 +5,7 @@ import { useCallback, useMemo, useState } from 'react';
 import {
   FilterBuilder,
   type FilterNode,
-} from '@json-filter-builder/filter-builder';
+} from 'json-filter-builder';
 
 import type {
   Product,

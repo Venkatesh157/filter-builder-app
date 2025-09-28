@@ -10,7 +10,7 @@ export default defineConfig(() => ({
   //  plugins: [ nxViteTsPaths() ],
   // },
   test: {
-    name: '@json-filter-builder/filter-builder',
+    name: 'json-filter-builder',
     watch: false,
     globals: true,
     environment: 'jsdom',

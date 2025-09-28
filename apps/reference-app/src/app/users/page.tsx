@@ -1,6 +1,6 @@
 import { cache } from 'react';
 
-import { BASE_OPERATORS } from '@json-filter-builder/filter-builder/schema';
+import { BASE_OPERATORS } from 'json-filter-builder/schema';
 
 import type { User, UserFieldConfig } from './user-types';
 import { UserFilterClient } from './user-filter-client';

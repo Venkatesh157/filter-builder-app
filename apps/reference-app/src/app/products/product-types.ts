@@ -1,4 +1,4 @@
-import type { Field } from '@json-filter-builder/filter-builder';
+import type { Field } from 'json-filter-builder';
 
 export interface ProductRating {
   rate: number;
@@ -19,4 +19,3 @@ export interface ProductFieldConfig {
   field: Field;
   path: string;
 }
-

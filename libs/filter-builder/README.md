@@ -1,4 +1,4 @@
-# @json-filter-builder/filter-builder
+# json-filter-builder
 
 This library was generated with [Nx](https://nx.dev).
 

@@ -221,4 +221,3 @@ React filter builder, nested query builder, advanced search UI, JSON filter seri
 - Questions? Reach out via GitHub discussions or raise an issue with the “question” label.
 
 Happy filtering! If you build something cool with `json-filter-builder`, share it—we love seeing creative UIs built on top of the engine.
-

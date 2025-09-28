@@ -1,4 +1,4 @@
-import type { Field } from '@json-filter-builder/filter-builder';
+import type { Field } from 'json-filter-builder';
 
 export interface User {
   id: number;
@@ -15,4 +15,3 @@ export interface UserFieldConfig {
   field: Field;
   path: string;
 }
-

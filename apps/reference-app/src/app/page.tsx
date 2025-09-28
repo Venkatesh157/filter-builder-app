@@ -6,7 +6,7 @@ import {
   FilterBuilder,
   type Field,
   BASE_OPERATORS,
-} from '@json-filter-builder/filter-builder';
+} from 'json-filter-builder';
 
 const fields: Field[] = [
   {
