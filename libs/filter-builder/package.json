@@ -1,7 +1,9 @@
 {
   "name": "json-filter-builder",
-  "version": "0.1.0",
+  "version": "0.1.1",
+  "description": "Schema-first React filter builder with spec-compliant serialization and GET/POST helpers.",
   "type": "module",
+  "license": "MIT",
   "main": "./dist/index.esm.js",
   "module": "./dist/index.esm.js",
   "types": "./dist/index.esm.d.ts",
@@ -20,6 +22,15 @@
       "default": "./dist/schema.esm.js"
     }
   },
+  "keywords": [
+    "react",
+    "filter-builder",
+    "query-builder",
+    "nested-filters",
+    "json",
+    "tailwind",
+    "nextjs"
+  ],
   "files": [
     "dist",
     "!**/*.tsbuildinfo"
