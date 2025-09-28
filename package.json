@@ -2,7 +2,9 @@
   "name": "@filter-builder-app/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "postinstall": "node ./node_modules/nx/bin/nx.js postinstall"
+  },
   "private": true,
   "dependencies": {
     "next": "~15.2.4",
