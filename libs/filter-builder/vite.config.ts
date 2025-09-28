@@ -4,7 +4,15 @@ import react from '@vitejs/plugin-react';
 export default defineConfig(() => ({
   root: __dirname,
   cacheDir: '../../node_modules/.vite/libs/filter-builder',
-  plugins: [react()],
+  plugins: [
+    react({
+      babel: {
+        presets: [
+          ['@babel/preset-react', { runtime: 'automatic', development: false }],
+        ],
+      },
+    }),
+  ],
   // Uncomment this if you are using workers.
   // worker: {
   //  plugins: [ nxViteTsPaths() ],
